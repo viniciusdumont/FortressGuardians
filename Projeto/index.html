@@ -1,15 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FortressGuardian</title>
-    <link rel="stylesheet" href="projeto.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo - Tela de Pause Medieval</title>
+
+<!-- Fonte Pixelada -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<link href="projeto.css" rel="stylesheet">
 </head>
 <body>
-    
+
+<!-- Botão de engrenagem estilo medieval -->
+<button class="btn-pause" onclick="pauseGame()">🛠️</button>
+
+<!-- Tela de Pause -->
+<div id="pauseScreen" class="pause-screen hidden">
+  <div class="pause-content">
+    <h1>🛡️ JOGO PAUSADO 🗡️</h1>
+    <div class="button-box">
+      <button onclick="toggleMusic()">🎻 Música: <span id="musicStatus">Ativa</span></button>
+      <button onclick="toggleSfx()">🔔 Efeitos: <span id="sfxStatus">Ativos</span></button>
+      <button onclick="resumeGame()">Continuar</button>
+    </div>
+    <button class="exit-button" onclick="exitToMenu()">Sair para o Menu</button>
+  </div>
+</div>
+
+<!-- Áudio exemplo -->
+<audio id="bgm" src="musica.mp3" autoplay loop></audio>
+<audio class="sfx" src="efeito.mp3"></audio>
+
+<script src="projeto.js"></script>
+
 </body>
-<script src="projeto.js">
-    
-</script>
+
 </html>
