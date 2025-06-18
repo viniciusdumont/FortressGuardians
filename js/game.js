@@ -130,7 +130,7 @@ var Enemy = new Phaser.Class({
 
     startOnPath: function(){
         this.follower.t = 0; 
-        this.hp = 3;
+        this.hp = 4;
         path.getPoint(this.follower.t, this.follower.vec);
         this.setPosition(this.follower.vec.x, this.follower.vec.y); 
         this.play('walk');
@@ -176,7 +176,7 @@ var Boss = new Phaser.Class({
     },
     startOnPath: function(){
         this.follower.t = 0;
-        this.hp = 20;
+        this.hp = 30;
         path.getPoint(this.follower.t, this.follower.vec);
         this.setPosition(this.follower.vec.x, this.follower.vec.y);
         this.setDisplaySize(128, 128);
@@ -476,8 +476,8 @@ function create() {
     this.physics.add.overlap(this.enemies, this.bullets, bulletHitEnemy, null, this);
     this.physics.add.overlap(this.bosses, this.bullets, bulletHitEnemy, null, this);
 
-    this.playerLives = 20;
-    this.playerGold = 1000;
+    this.playerLives = 30;
+    this.playerGold = 100;
     this.isGameOver = false;
 
     const uiX = 30;
