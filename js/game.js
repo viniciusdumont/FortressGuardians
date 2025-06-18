@@ -75,7 +75,12 @@ const TURRET_DATA = {
         fireRate: 1000,
         cost: 50,
         sfxTiro: 'atk_a',
-        sfxPlace: 'spawn_a' 
+        sfxPlace: 'spawn_a',
+        upgrade: {
+            sprite: 'arqueiran2_1.png',
+            attackSprite: 'arqueiran2_2.png',
+            bulletSprite: 'arqueiran2_tiro.png'
+        }
     },
     'mago': {
         sprite: 'mago_1.png',
@@ -86,7 +91,12 @@ const TURRET_DATA = {
         fireRate: 1200,
         cost: 100,
         sfxTiro: 'atk_m',
-        sfxPlace: 'spawn_m'
+        sfxPlace: 'spawn_m',
+        upgrade: {
+            sprite: 'magon2_1.png',
+            attackSprite: 'magon2_2.png',
+            bulletSprite: 'magon2_tiro.png'
+        }
     },
     'cavaleiro': {
         sprite: 'cavaleiro_1.png',
@@ -97,7 +107,12 @@ const TURRET_DATA = {
         fireRate: 1500,
         cost: 150,
         sfxTiro: 'atk_c',
-        sfxPlace: 'spawn_c'
+        sfxPlace: 'spawn_c',
+        upgrade: {
+            sprite: 'cavaleiron2_1.png',
+            attackSprite: 'cavaleiron2_2.png',
+            bulletSprite: 'cavaleiron2_tiro.png'
+        }
     }
 };
 
@@ -210,9 +225,13 @@ var Bullet = new Phaser.Class({
         this.target = null;
         this.isNew = false;
     },
-    fire: function(startX, startY, target, damage, texture){
-        this.setPosition(startX, startY);
-        this.setTexture('sprites', texture);
+
+    fire: function(turret, target, damage, texture){
+        this.setPosition(turret.x, turret.y);
+
+        const textureAtlas = turret.level === 2 ? 'upgrades' : 'sprites';
+        this.setTexture(textureAtlas, texture);
+        
         this.target = target;
         this.damage = damage;
         this.setActive(true);
@@ -255,6 +274,7 @@ var Turret = new Phaser.Class({
         this.fireRate = 0;
         this.upgradeCost = 0;
         this.totalInvested = 0;
+        this.turretType = '';
 
         this.idleSprite = '';
         this.attackSprite = '';
@@ -274,6 +294,13 @@ var Turret = new Phaser.Class({
         
         this.upgradeCost = Math.floor(data.cost * 1.5); 
         this.totalInvested = data.cost;
+
+        for (const type in TURRET_DATA) {
+            if (TURRET_DATA[type].sprite === data.sprite) {
+                this.turretType = type;
+                break;
+            }
+        }
     },
     
     place: function(i, j) {
@@ -285,6 +312,10 @@ var Turret = new Phaser.Class({
     },
 
     upgrade: function() {
+        if (this.level >= 2) {
+            return;
+        }
+
         this.level++;
         
         this.damage = Math.floor(this.damage * 1.2);
@@ -293,6 +324,14 @@ var Turret = new Phaser.Class({
 
         this.totalInvested += this.upgradeCost;
         this.upgradeCost = Math.floor(this.upgradeCost * 1.75);
+
+        if (this.level === 2) {
+            const upgradeData = TURRET_DATA[this.turretType].upgrade;
+            this.idleSprite = upgradeData.sprite;
+            this.attackSprite = upgradeData.attackSprite;
+            this.bulletSprite = upgradeData.bulletSprite;
+            this.setTexture('upgrades', this.idleSprite);
+        }
     },
 
     sell: function() {
@@ -330,16 +369,18 @@ var Turret = new Phaser.Class({
         
         if (time > this.nextTic){
             this.scene.sound.play(this.sfxTiro, { volume: 0.3 });
-            this.setTexture('sprites', this.attackSprite);
+            
+            const textureAtlas = this.level === 2 ? 'upgrades' : 'sprites';
+            this.setTexture(textureAtlas, this.attackSprite);
 
             var bullet = this.scene.bullets.get();
             if (bullet){
-                bullet.fire(this.x, this.y, enemy, this.damage, this.bulletSprite);
+                bullet.fire(this, enemy, this.damage, this.bulletSprite);
             }
 
             this.scene.time.delayedCall(100, () => {
                 if (this.active){
-                    this.setTexture('sprites', this.idleSprite);
+                    this.setTexture(textureAtlas, this.idleSprite);
                 }
             });
             this.nextTic = time + this.fireRate;
@@ -357,7 +398,7 @@ var Turret = new Phaser.Class({
     }
 });
 
-function preload(){ //carregar sprites
+function preload(){ 
     this.load.atlas('sprites', 'assets/game_assets.png', 'assets/game_assets.json');
     this.load.atlas('upgrades', 'assets/levelup_assets.png', 'assets/levelup_assets.json');
 
@@ -436,7 +477,7 @@ function create() {
     this.physics.add.overlap(this.bosses, this.bullets, bulletHitEnemy, null, this);
 
     this.playerLives = 20;
-    this.playerGold = 100;
+    this.playerGold = 1000;
     this.isGameOver = false;
 
     const uiX = 30;
@@ -775,8 +816,13 @@ function selectTurretForUI(turret) {
 
     this.selectedTurret = turret;
     
-    const upgradeButtonText = this.upgradeUI.getAt(0); 
-    upgradeButtonText.setText(`Up: Lvl ${turret.level + 1} (${turret.upgradeCost}G)`);
+    const upgradeButton = this.upgradeUI.getAt(0); 
+
+    if (turret.level >= 2) {
+        upgradeButton.setText('Max Level').disableInteractive();
+    } else {
+        upgradeButton.setText(`Up: Lvl ${turret.level + 1} (${turret.upgradeCost}G)`).setInteractive();
+    }
 
     const sellButtonText = this.upgradeUI.getAt(1);
     const refundAmount = Math.floor(turret.totalInvested / 2);
@@ -792,5 +838,3 @@ function hideUpgradeUI() {
     }
     this.selectedTurret = null;
 }
-
-
